@@ -1,0 +1,179 @@
+create table restaurants(
+	id varchar(50) primary key,
+	name varchar(50),
+	location varchar(50),
+	price_range int
+);
+create table product(
+	id_ serial PRIMARY KEY,
+	pname varchar(50) UNIQUE NOT NULL,
+	price int NOT NULL,
+	description varchar(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE Product_img (
+	id_ serial,
+	pname varchar(50) PRIMARY KEY,
+	imgname varchar(50) UNIQUE NOT NULL,
+	FOREIGN KEY(id_) REFERENCES Product(id_)
+);
+
+CREATE TABLE Sales (
+	pid serial,
+	salesid serial ,
+	orderid serial,
+	itemNo int NOT NULL,
+	Qty int NOT NULL,
+	soldOn date NOT NULL,
+	payement int  NOT NULL,
+	foreign key(pid) references Product(id_),
+	primary key(salesid,orderid)
+);
+
+CREATE TABLE User_Orders (
+	userid serial,
+	Usalesid serial,
+	Uorderid serial,
+	payementid serial,
+	orderOn DATE NOT NULL,
+	order_ VARCHAR (50) UNIQUE NOT NULL,
+	FOREIGN KEY(Usalesid,Uorderid) REFERENCES Sales(orderid,salesid),
+	FOREIGN KEY(userid) REFERENCES Users(userid),
+	primary key(userid,Usalesid)
+);
+
+CREATE TABLE Users (
+	userid serial primary key,
+	address VARCHAR (50) UNIQUE NOT NULL,
+	email VARCHAR (20) UNIQUE NOT NULL,
+	Username VARCHAR (20) UNIQUE NOT NULL,
+	password_ VARCHAR (20) UNIQUE NOT NULL,
+	confirmpassword VARCHAR (20) UNIQUE NOT NULL,
+	role_ VARCHAR (20) UNIQUE NOT NULL
+);
+
+CREATE TABLE User_Payments (
+	paymentid serial,
+	userid serial,
+	cardholdername VARCHAR (50) UNIQUE NOT NULL,
+	cardtype VARCHAR (20) UNIQUE NOT NULL,
+	security_code VARCHAR (20) UNIQUE NOT NULL,
+	Payement_type VARCHAR (20) UNIQUE NOT NULL,
+	Expiration_date DATE NOT NULL,
+	FOREIGN KEY(userid) REFERENCES Users(userid),
+	primary key(userid,paymentid)
+);
+
+create table category (
+	cname varchar(50),
+	id serial,
+	foreign key(id) references product(id_),
+	primary key(id)
+);
+
+create table UserandOrder(
+UUsalesid serial,
+UUorderid serial,
+UUid serial,
+foreign key(UUsalesid,UUorderid) references sales(salesid,orderid),
+primary key(UUsalesid,UUorderid,UUid)
+);
+
+
+CREATE OR REPLACE FUNCTION restaurant_insert_trigger_fnc()
+  RETURNS trigger AS
+$$
+BEGIN
+    INSERT INTO restaurant (id,name,location,price_range)
+         VALUES(NEW.id,NEW.name,NEW.location,NEW.price_range,current_user,current_date);
+RETURN NEW;
+END;
+$$
+
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER restaurant_insert_trigger
+
+  AFTER INSERT
+
+  ON restaurant
+
+  FOR EACH ROW
+
+  EXECUTE PROCEDURE restaurant_insert_trigger_fnc();
+  
+
+CREATE TRIGGER product_delete_trigger
+
+  AFTER DELETE
+
+  ON product
+
+  FOR EACH ROW
+
+ EXECUTE PROCEDURE aft_delete();
+ 
+CREATE OR REPLACE FUNCTION product_insert_trigger_fnc()
+  RETURNS trigger AS
+$$
+BEGIN
+    INSERT INTO product (id_,pname,price,description)
+         VALUES(NEW.id_,NEW.pname,NEW.price,NEW.description,current_user,current_date);
+RETURN NEW;
+END;
+$$
+
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER product_insert_trigger
+
+  AFTER INSERT
+
+  ON product
+
+  FOR EACH ROW
+
+  EXECUTE PROCEDURE product_insert_trigger_fnc();
+  
+CREATE TRIGGER verify_user_for_update
+
+ BEFORE UPDATE
+
+ ON product
+
+ FOR EACH ROW
+
+EXECUTE PROCEDURE product_verify_user_priv();
+
+CREATE TRIGGER product_delete_trigger
+
+  AFTER DELETE
+
+  ON product
+
+  FOR EACH ROW
+
+ EXECUTE PROCEDURE aft_delete();
+ 
+ CREATE OR REPLACE FUNCTION user_insert_trigger_fnc()
+  RETURNS trigger AS
+$$
+BEGIN
+    INSERT INTO Users (userid,address,email,Username,password_,confirmpassword,role_)
+         VALUES(NEW.userid,NEW.address,NEW.email,NEW.Username,NEW.password_,NEW.confirmpassword,NEW.role_,current_user,current_date);
+RETURN NEW;
+END;
+$$
+
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER product_insert_trigger
+
+  AFTER INSERT
+
+  ON product
+
+  FOR EACH ROW
+
+  EXECUTE PROCEDURE product_insert_trigger_fnc();
+  
